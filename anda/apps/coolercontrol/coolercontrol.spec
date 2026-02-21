@@ -30,15 +30,6 @@ BuildRequires:  cmake(Qt6)
 BuildRequires:  cmake(Qt6WebEngineWidgets)
 %description %_desc
 
-%package liqctld
-Summary:        CoolerControl daemon for interacting with liquidctl devices on a system level
-Requires:       coolercontrold
-BuildRequires:  python3-devel python3-wheel python3-liquidctl python3-setproctitle python3-fastapi python3-uvicorn python3-pip
-%description liqctld %_desc
-coolercontrol-liqctld is a CoolerControl daemon for interacting with liquidctl devices on a system level, and is
-installed as the coolercontrol-liqctld application. Its main purpose is to wrap the underlying
-liquidctl library providing an API interface that the main coolercontrol daemon interacts with.
-It also enables parallel device communication and access to specific device properties.
 
 %package -n coolercontrold
 Summary:        Monitor and control your cooling devices.
@@ -71,10 +62,6 @@ pushd coolercontrol-ui
 npm run build-only &
 popd
 
-pushd coolercontrol-liqctld
-%pyproject_wheel
-popd
-
 pushd coolercontrol
 %cmake
 %cmake_build &
@@ -88,12 +75,6 @@ cp -rfp ../coolercontrol-ui/dist/* resources/app/
 popd
 
 %install
-pushd coolercontrol-liqctld
-#define _pyproject_wheeldir .
-%pyproject_install
-%pyproject_save_files coolercontrol_liqctld
-popd
-
 pushd coolercontrold
 install -Dpm755 target/rpm/coolercontrold %buildroot%_bindir/coolercontrold
 install -Dpm644 LICENSE.dependencies %buildroot%_datadir/licenses/coolercontrold/LICENSE.dependencies
@@ -127,9 +108,6 @@ appstream-util validate-relax --nonet %buildroot%_metainfodir/%rdnn.metainfo.xml
 %postun -n coolercontrold
 %systemd_postun_with_restart coolercontrold.service
 
-# coolercontrold.service automatically uses the liqctld service, so there are
-# no scriptlets for liqctld.
-
 
 %files
 %doc README.md
@@ -146,11 +124,6 @@ appstream-util validate-relax --nonet %buildroot%_metainfodir/%rdnn.metainfo.xml
 %_bindir/coolercontrold
 %_unitdir/coolercontrold.service
 
-%files liqctld -f %pyproject_files
-%doc coolercontrol-liqctld/README.md
-%license LICENSE
-%_bindir/coolercontrol-liqctld
-%_unitdir/coolercontrol-liqctld.service
 
 %changelog
 * Thu Aug 15 2024 madonuko <mado@fyralabs.com> - 1.4.0-1
